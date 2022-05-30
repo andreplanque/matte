@@ -40,11 +40,14 @@ class ParseFlights:
         self._data = self._quadrant_parse(np.array(self._data))
         self.data = self._data
 
+    def __call__(self):
+        return self.data
+
     def split(self):
-        return np.array([self._data[0][0::4], self._data[1][0::4]]),\
-               np.array([self._data[0][1::4], self._data[1][1::4]]),\
-               np.array([self._data[0][2::4], self._data[1][2::4]]),\
-               np.array([self._data[0][3::4], self._data[1][3::4]])
+        return Differentiable(np.array([self._data[0][0::4], self._data[1][0::4]])),\
+               Differentiable(np.array([self._data[0][1::4], self._data[1][1::4]])),\
+               Differentiable(np.array([self._data[0][2::4], self._data[1][2::4]])),\
+               Differentiable(np.array([self._data[0][3::4], self._data[1][3::4]]))
 
     @staticmethod
     @np.vectorize
@@ -53,17 +56,33 @@ class ParseFlights:
 
 
 def main():
-    """
-    data = Differentiable.from_file('data.csv')  # creating an object from the file
-    plt.plot(*data())  # plotting the data
-    plt.plot(*data.diff()())  # plotting the derivative
-    plt.plot(*data.diff().diff()())  # plotting the second derivative
-    plt.show()  # showing the plot
-    """
-    data = ParseFlights('08510_20220519-103541.csv')
-    # K1, K2, K3, K4 = data.split()
-    plt.plot(*data.data)
-    plt.show()
+    flights = ParseFlights("08510_20220519-103541.csv")
+    x, y, z, w = flights.split()  # splitting the data into four different quadrants
+    x_growth = np.average(x.diff()()[1])
+    y_growth = np.average(y.diff()()[1])
+    z_growth = np.average(z.diff()()[1])
+    w_growth = np.average(w.diff()()[1])
+    time = list(flights()[0])
+    passengers = list(flights()[1])
+    time += [2020, 2020.25, 2020.5, 2020.75,
+             2021, 2021.25, 2021.5, 2021.75,
+             2022, 2022.25, 2022.5, 2022.75]
+    for _ in range(3):
+        passengers += [passengers[-4]+x_growth,
+                       passengers[-3]+y_growth,
+                       passengers[-2]+z_growth,
+                       passengers[-1]+w_growth]
+    # plt.plot(time, passengers)
+    # plt.plot(*flights())
+    # plt.plot(*x(), label="K1")
+    # plt.plot(*y(), label="K2")
+    # plt.plot(*z(), label="K3")
+    # plt.plot(*w(), label="K4")
+    # plt.legend()
+    # plt.xlabel("Year")
+    # plt.ylabel("Passengers")
+    # plt.title("Passengers")
+    # plt.savefig("quad.eps")
 
 
 if __name__ == '__main__':
