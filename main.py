@@ -1,12 +1,5 @@
+import matplotlib.pyplot as plt
 import numpy as np  # importing necessary libraries
-
-
-AMOGUS = np.array([
-        [0, 1, 1, 1],
-        [1, 1, 0, 0],
-        [1, 1, 1, 1],
-        [0, 1, 0, 1]
-    ])
 
 
 class Differentiable:
@@ -22,13 +15,6 @@ class Differentiable:
         ydiff = [(y[i + 1] - y[i]) / (x[i + 1] - x[i]) for i in range(len(y) - 1)]  # calculating the derivative
         return type(self)(np.array([x[:-1], ydiff]))  # returning the derivative as a new object
 
-    # redundant, but I'm too lazy to delete it
-    @classmethod
-    def from_file(cls, path, delimiter=","):  # constructing an object from a file
-        with open(path, 'r') as f:
-            value = np.genfromtxt(f, delimiter=delimiter, unpack=True)
-        return cls(value)
-
 
 class ParseFlights:
     def __init__(self, path, delimiter=";"):  # initializing the object
@@ -36,10 +22,9 @@ class ParseFlights:
             self._data = np.genfromtxt(f, delimiter=delimiter, unpack=True, dtype=str)
         self._data = self._data[1:]  # removing the first row
         self._data = self._quadrant_parse(np.array(self._data))  # turning the string into a fraction
-        self.data = self._data  # storing the data
 
     def __call__(self):  # returning the data
-        return self.data
+        return self._data
 
     def split(self):  # splitting the data into the four quadrants
         return Differentiable(np.array([self._data[0][0::4], self._data[1][0::4]])),\
@@ -62,18 +47,30 @@ def main():
     w_growth = np.average(w.diff()()[1])
     time = list(flights()[0])  # getting the time data
     passengers = list(flights()[1])  # getting the passenger data
-    time += [2020, 2020.25, 2020.5, 2020.75,
-             2021, 2021.25, 2021.5, 2021.75,
-             2022, 2022.25, 2022.5, 2022.75]  # adding the new time data
+
     for _ in range(3):
-        passengers += [passengers[-4]+x_growth,
-                       passengers[-3]+y_growth,
-                       passengers[-2]+z_growth,
-                       passengers[-1]+w_growth]  # adding the new predicted passenger data
+        time += [time[-4] + 1,
+                 time[-3] + 1,
+                 time[-2] + 1,
+                 time[-1] + 1]  # adding the new time data
+        passengers += [passengers[-4] + x_growth,
+                       passengers[-3] + y_growth,
+                       passengers[-2] + z_growth,
+                       passengers[-1] + w_growth]  # adding the new predicted passenger data
+
+
+AMOGUS = np.array([
+        [0, 1, 1, 1],
+        [1, 1, 0, 0],
+        [1, 1, 1, 1],
+        [0, 1, 0, 1]
+    ])
 
 
 if __name__ == '__main__':
     main()  # calling the main function
+    plt.imshow(AMOGUS, cmap='gray_r')
+    plt.show()
 
 
 # Did you ever hear the tragedy of Darth Plagueis The Wise? I thought not. It's not
@@ -86,3 +83,4 @@ if __name__ == '__main__':
 # he did. Unfortunately, he taught his apprentice everything he knew, then his
 # apprentice killed him in his sleep. Ironic. He could save others from death, but
 # not himself.
+
